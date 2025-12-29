@@ -50,7 +50,7 @@ Using `@RestControllerAdvice`, the application intercepts specific exceptions be
 
 ## Testing
 
-I highly recommend using [Postman](https://www.postman.com/) to explore and test the API endpoints.
+I highly recommend using [Postman](https://www.postman.com/) to test the API endpoints.
 
 ### Prerequisites to run
 * **Java JDK 17** or higher.
