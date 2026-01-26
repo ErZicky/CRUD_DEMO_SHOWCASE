@@ -10,7 +10,8 @@ This is a simple Java/Spring project I created to master the basics of CRUD and 
 
 - Global Exception Handling using @RestControllerAdvice for consistent API responses.
 
-- Persistence managed via Spring Data JPA.
+- Persistence managed via Spring Data JPA and in memory db.
+- Automated Health Monitoring: Real-time health checks and automated "Watcher" to detect downtime or performance degradation.
 
 - Built with Gradle
 
@@ -18,15 +19,32 @@ This is a simple Java/Spring project I created to master the basics of CRUD and 
 
 All endpoints are reachable under the base path: `/api/products`
 
-| Method | Endpoint | Description | Request Body | Success Code |
-| :--- | :--- | :--- | :--- | :--- |
-| **GET** | `/api/products` | Retrieve all products | None | `200 OK` |
-| **GET** | `/api/products/{id}` | Retrieve a product by ID | None | `200 OK` |
-| **GET** | `/api/products/searchLike/{name}` | Search products by name (partial match) | None | `200 OK` |
-| **POST** | `/api/products` | Create a new product | JSON Product | `201 Created` |
-| **PUT** | `/api/products/{id}` | Update an existing product | JSON Product | `200 OK` |
-| **DELETE** | `/api/products` | Delete a product (via object) | JSON Product | `204 No Content` |
-| **DELETE** | `/api/products/{id}` | Delete a product by ID | None | `204 No Content` |
+| Method | Endpoint | Description | Request Body | Success Code                 |
+| :--- | :--- | :--- | :--- |:-----------------------------|
+| **GET** | `/api/products` | Retrieve all products | None | `200 OK`                     |
+| **GET** | `/api/products/{id}` | Retrieve a product by ID | None | `200 OK`                     |
+| **GET** | `/api/products/searchLike/{name}` | Search products by name (partial match) | None | `200 OK`                     |
+| **POST** | `/api/products` | Create a new product | JSON Product | `201 Created`                |
+| **PUT** | `/api/products/{id}` | Update an existing product | JSON Product | `200 OK`                     |
+| **DELETE** | `/api/products` | Delete a product (via object) | JSON Product | `204 No Content`             |
+| **DELETE** | `/api/products/{id}` | Delete a product by ID | None | `204 No Content`             |
+|**GET** | `/actuator/health` | Perform a manual System health check | None | `200 OK or 503 System error` |
+
+## Monitoring & Downtime Detection
+this project includes a simple monitoring layer, ideally to reduce mean time to detection, it's made up of 2 component
+
+### 1. Custom Health Indicator
+
+this component extends Spring Boot Actuator. It can return these problems:
+
+* Status UP: Database responds within 500ms.
+* Status DEGRADED: Database is online but responding slowly (latency > Xms).
+* Status DOWN: Database is unreachable or empty.
+
+### 2. Automated Health Watcher
+The HealthWatcher is a background service that uses @Scheduled tasks to monitor the system every 10 seconds.
+It acts as a Watcher that proactively polls the CustomHealthIndicator.
+In case the health indicator return anything that isn't an healthy system, it triggers an Alert system (logged to console).
 
 ## Custom Exception Handling
 
@@ -48,7 +66,7 @@ Using `@RestControllerAdvice`, the application intercepts specific exceptions be
 
 ## Testing
 
-I highly recommend using [Postman](https://www.postman.com/) to test the API endpoints.
+I highly recommend using [Postman](https://www.postman.com/) and connecting to http://localhost:8080/ to test the API endpoints.
 
 ### Prerequisites to run
 * **Java JDK 17** or higher.
