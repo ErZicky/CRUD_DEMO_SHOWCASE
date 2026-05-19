@@ -2,9 +2,9 @@ package com.example.crud_demo.model;
 
 public class ErrorResponse {
 
-    public long timestamp;
-    public int status;
-    public String message;
+    private long timestamp;
+    private int status;
+    private String message;
 
 
     public  ErrorResponse(long timestamp, int status, String message) {

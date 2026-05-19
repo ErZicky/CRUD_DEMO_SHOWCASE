@@ -60,9 +60,8 @@ Using `@RestControllerAdvice`, the application intercepts specific exceptions be
 | Exception | HTTP Status | Response Body | Description |
 | :--- | :--- | :--- | :--- |
 | `ProductNotFoundException` | `404 Not Found` | Custom Error JSON | Thrown when a requested Product ID does not exist in the database. |
-| `Exception` (Generic) | `418 I'm a teapot` | Custom Error JSON | A "catch-all" safety net for unexpected errors (e.g., DB connection issues).|
-
-> **N.B:** normally we would use a `500 Internal Server Error` code, in the project the `418 I'm a teapot` is used to showcase that the code is indeed taking our custom exception handler
+| `MethodArgumentTypeMismatchException` | `400 Bad Request` | Custom Error JSON | Thrown when a path variable cannot be converted to the expected type (e.g. `GET /api/products/abc` when the id is declared as an `int`). |
+| `Exception` (Generic) | `500 Internal Server Error` | Custom Error JSON | A "catch-all" safety net for unexpected errors (e.g., DB connection issues).|
 
 ## Testing
 

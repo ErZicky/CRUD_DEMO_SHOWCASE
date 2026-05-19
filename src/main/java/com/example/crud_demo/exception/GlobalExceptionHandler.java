@@ -6,6 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.time.LocalDate;
@@ -37,6 +38,17 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(error, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(MethodArgumentTypeMismatchException.class)
+    public ResponseEntity<ErrorResponse> handleTypeMismatch(MethodArgumentTypeMismatchException ex) {
+        String expectedType = ex.getRequiredType() != null ? ex.getRequiredType().getSimpleName() : "unknown";
+        ErrorResponse error = new ErrorResponse(
+                Instant.now().getEpochSecond(),
+                400,
+                "Invalid value '" + ex.getValue() + "' for parameter '" + ex.getName() + "', expected type: " + expectedType
+        );
+        return new ResponseEntity<>(error, HttpStatus.BAD_REQUEST);
+    }
+
     /**
      * A "catch-all" handler for any other unexpected exceptions (e.g., Database connection issues).
      * This is useful in case an exception we were not expecting is thrown and prevents the leaking of sensitive stack trace information to the client.
@@ -46,7 +58,7 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleGenericException(Exception ex) {
         ErrorResponse error = new ErrorResponse(
                 Instant.now().getEpochSecond(),
-                418, //I'm a teapot
+                500,
                 "sorry but something is not right"
         );
         return new ResponseEntity<>(error, HttpStatus.INTERNAL_SERVER_ERROR);

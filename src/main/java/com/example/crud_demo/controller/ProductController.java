@@ -8,7 +8,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
-import java.util.Optional;
 
 /*
 RestController combines annotation Controller and ResponseBody. Controller says that this class manage HTTP request (get, post etc..)
@@ -38,17 +37,12 @@ public class ProductController {
     //this endpoint will answer to request such as /api/products/1
     @GetMapping ("/{id}")
     //PathVariable fetch the value from the url in the position of the placeholder and injects it into the id variable
-    public Optional<Product> getProductById(@PathVariable int id)
+    public Product getProductById(@PathVariable int id)
     {
 
-        //since in the service and GlobalExceptionHandler we are managing the throw of the exception here there's no need to do the .map and .orElse
+        //the service throws ProductNotFoundException if the id is not found, the GlobalExceptionHandler catches it and returns a 404,
+        //so here we can simply return the product directly without any null check.
         return  ps.getProductById(id);
-
-        //this is what we would do if we were not managing the exception service side (only doable if we use optional<>, otherwise use a simple if else)
-        // returns A ResponseEntity containing the JSON of the Product if found with a 200 answer code  or a empty response with a 404 status.
-        /*return ps.getProductById(id)
-                .map(ResponseEntity::ok)
-                .orElse(ResponseEntity.notFound().build());*/
 
     }
 
@@ -85,8 +79,9 @@ public class ProductController {
     @PutMapping("/{id}")
     public ResponseEntity<Product> updateProduct(@RequestBody Product p, @PathVariable int id)
     {
-        if(ps.getProductById(id).isEmpty())
-            return ResponseEntity.notFound().build();
+        //we call getProductById first to trigger ProductNotFoundException if the id is not found (which the GlobalExceptionHandler will convert into a 404).
+        //without this check db.save would treat the request as an insert and create a new record with the given id, which is not what PUT on a missing resource should do
+        ps.getProductById(id);
 
         return new ResponseEntity<>(ps.updateProduct(p,id), HttpStatus.OK);
     }
@@ -97,8 +92,8 @@ public class ProductController {
     @DeleteMapping
     public ResponseEntity<Void> deleteProduct(@RequestBody Product p)
     {
-        if(ps.getProductById(p.getId()).isEmpty())
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+        //same pattern as updateProduct: we call getProductById to let the exception flow handle the 404 case in a uniform way across endpoints
+        ps.getProductById(p.getId());
 
         ps.deleteProduct(p);
         //we could return just a simple status OK on deletion but the standard is to return NO CONTENT (204) which is like saying to the client
@@ -117,12 +112,9 @@ public class ProductController {
     {
 
 
-        //since the exeption for this method is handled service side whe just need to call it like this:
+        //since the exception for this method is handled service side we just need to call getProductById to trigger the throw if the id is missing.
+        //if we skipped this and called deleteById directly, spring data would throw EmptyResultDataAccessException which would fall into the generic handler instead of producing a 404.
         ps.getProductById(id);
-
-        //otherwise we would need to do something like this:
-       /* if(ps.getProductById(id).isEmpty())
-            return new ResponseEntity<>(HttpStatus.NOT_FOUND);*/
 
         ps.deleteProductById(id);
         return new ResponseEntity<>(HttpStatus.NO_CONTENT);
