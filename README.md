@@ -1,5 +1,7 @@
 # Spring Boot CRUD & REST API Demo: an educational Java/Spring project
 
+_Disclaimer: AI was used to scan the repo and translate italian comments to english. Most of the repo code was written manually_
+
 This is a simple Java/Spring project I created to master the basics of CRUD and REST API development a while back. I've refactored the code for better clarity and added English comments to help others who might need it to understand the core concepts.
 
 ### Key Features:
